@@ -591,11 +591,9 @@ class LineChartSample1State extends State<LineChartSample1> {
         ),
         AspectRatio(
           aspectRatio: isLandscape ? 3 : 1.5,
-          child: Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16, left: 6),
-              child: _LineChart(),
-            ),
+          child: Padding(
+            padding: const EdgeInsets.only(right: 16, left: 6),
+            child: _LineChart(),
           ),
         ),
       ],
