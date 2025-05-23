@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:my_app_f/colors.dart';
+import 'package:my_app_f/product_stock/product_stock.dart';
+import 'package:my_app_f/sales_report/sales_report.dart';
+import 'package:my_app_f/tools_n_maintenance/tools_n_maintenance.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,9 +33,11 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
+        scaffoldBackgroundColor: AppColors.background,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -53,70 +60,143 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
+  PageController controller = PageController();
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+  final ScrollController scrollController = ScrollController();
+
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    _tabController = TabController(vsync: this, length: 3);
+
+    _tabController.addListener(() {
+      scrollController.animateTo(
+        100,
+        duration: Duration(milliseconds: 250),
+        curve: Curves.linear,
+      );
     });
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        systemNavigationBarColor: Colors.white, // navigation bar color
+        statusBarColor: Colors.white, // status bar color
+        statusBarIconBrightness: Brightness.dark, // status bar icons' color
+        systemNavigationBarIconBrightness:
+            Brightness.dark, //navigation bar icons' color
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+    );
+
+    return Scaffold(
+      body: SafeArea(
+        child: Stack(
+          children: [
+            NestedScrollView(
+              headerSliverBuilder:
+                  (context, innerBoxIsScrolled) => [
+                    SliverOverlapAbsorber(
+                      handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                        context,
+                      ),
+                      sliver: SliverAppBar(
+                        floating: true,
+                        expandedHeight: 100,
+                        forceElevated: innerBoxIsScrolled,
+                        backgroundColor: AppColors.background,
+                        flexibleSpace: FlexibleSpaceBar(
+                          centerTitle: true,
+                          background: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                            ),
+                          ),
+                          title: Container(
+                            height: 35,
+                            width: 200,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: AppColors.secondaryDark,
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 15),
+                            child: TabBar(
+                              controller: _tabController,
+                              unselectedLabelColor: AppColors.secondaryLight,
+                              indicator: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.primary,
+                                    AppColors.secondary,
+                                  ],
+                                ),
+                              ),
+                              labelColor: AppColors.surface,
+                              indicatorSize: TabBarIndicatorSize.label,
+                              dividerHeight: 0,
+                              padding: EdgeInsets.zero,
+                              indicatorPadding: EdgeInsets.symmetric(
+                                horizontal: -10,
+                              ),
+                              labelStyle: TextTheme.of(context).titleSmall,
+                              indicatorWeight: 0,
+                              labelPadding: EdgeInsets.zero,
+                              textScaler: TextScaler.linear(0.5),
+                              tabs: [
+                                Tab(
+                                  icon: Icon(Icons.bar_chart_rounded, size: 15),
+                                  text: "Report",
+                                ),
+                                Tab(
+                                  icon: Icon(
+                                    Icons.inventory_2_rounded,
+                                    size: 15,
+                                  ),
+                                  text: "Stock",
+                                ),
+                                Tab(
+                                  icon: Icon(Icons.build_rounded, size: 15),
+                                  text: "Operational",
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+              physics: const BouncingScrollPhysics(),
+              controller: scrollController,
+              body: TabBarView(
+                controller: _tabController,
+                children: [
+                  const SalesReport(),
+                  const ProductStockPage(),
+                  const ToolsNMaintenancePage(),
+                ],
+              ),
             ),
+
+            // Container(
+            //   height: statusBarHeight,
+            //   width: mediaQuery.size.width,
+            //   color: Colors.blue.shade100,
+            // ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
